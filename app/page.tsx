@@ -1,103 +1,138 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from 'react';
+
+interface RainDrop {
+    id: number;
+    x: number;
+    y: number;
+    char: string;
+    speed: number;
+}
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    const [displayedText, setDisplayedText] = useState('');
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [showCursor, setShowCursor] = useState(true);
+    const [rainDrops, setRainDrops] = useState<RainDrop[]>([]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    const fullText = "Welcome to p1an0_guy's Next.js Page!";
+    const asciiChars = ['0', '1', '!', '@', '#', '$', '%', '^', '&', '*', '+', '=', '-', '_', '|', '\\', '/', '?', '<', '>', '~', '`'];
+
+    // Typewriter effect with randomized speed
+    useEffect(() => {
+        if (currentIndex < fullText.length) {
+            // Random typing speed to simulate human typing
+            const randomDelay = Math.floor(Math.random() * 100) + 50;
+
+            const timeout = setTimeout(() => {
+                setDisplayedText(prev => prev + fullText[currentIndex]);
+                setCurrentIndex(prev => prev + 1);
+            }, randomDelay);
+
+            return () => clearTimeout(timeout);
+        }
+    }, [currentIndex, fullText]);
+
+    // Blinking cursor effect
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setShowCursor(prev => !prev);
+        }, 500); // Blink speed
+
+        return () => clearInterval(interval);
+    }, []);
+
+    // ASCII Rain effect
+    useEffect(() => {
+        // Only run on client side
+        if (typeof window === 'undefined') return;
+
+        const createRainDrop = () => {
+            const newDrop: RainDrop = {
+                id: Math.random(),
+                x: Math.random() * window.innerWidth,
+                y: -20,
+                char: asciiChars[Math.floor(Math.random() * asciiChars.length)],
+                speed: Math.random() * 3 + 1
+            };
+            return newDrop;
+        };
+
+        const interval = setInterval(() => {
+            setRainDrops(prev => {
+                // Add more drops more frequently
+                const newDrops = Math.random() < 0.7 ? [createRainDrop()] : [];
+                
+                // Update existing drops
+                const updatedDrops = prev
+                    .map(drop => ({
+                        ...drop,
+                        y: drop.y + drop.speed * 8
+                    }))
+                    .filter(drop => drop.y < window.innerHeight + 50);
+
+                return [...updatedDrops, ...newDrops];
+            });
+        }, 100);
+
+        return () => clearInterval(interval);
+    }, [asciiChars]);
+
+    return (
+        <div style={{ position: 'relative', overflow: 'hidden' }}>
+            {/* ASCII Rain Background */}
+            <div style={{ 
+                position: 'fixed', 
+                top: 0, 
+                left: 0, 
+                width: '100%', 
+                height: '100%', 
+                pointerEvents: 'none',
+                zIndex: 0
+            }}>
+                {rainDrops.map(drop => (
+                    <div
+                        key={drop.id}
+                        style={{
+                            position: 'absolute',
+                            left: drop.x,
+                            top: drop.y,
+                            color: '#8ec07c',
+                            opacity: 0.8,
+                            fontSize: '16px',
+                            fontFamily: 'monospace',
+                            textShadow: '0 0 3px #8ec07c'
+                        }}
+                    >
+                        {drop.char}
+                    </div>
+                ))}
+            </div>
+
+            <main className="flex min-h-screen flex-col items-center justify-center bg-yellow-900" style={{ backgroundColor: '#282828', fontFamily: '"JetBrainsMono Nerd Font", "JetBrains Mono", "Fira Code", "Cascadia Code", "SF Mono", Monaco, "Inconsolata", "Roboto Mono", "Source Code Pro", "Ubuntu Mono", monospace', position: 'relative', zIndex: 1 }}>
+                <h1 className="text-4xl font-bold mb-6" style={{ color: '#fabd2f' }}>
+                {displayedText}
+                <span style={{
+                    opacity: showCursor ? 1 : 0,
+                    color: '#fabd2f'
+                }}>_</span>
+            </h1>
+            <p className="text-lg mb-6" style={{ color: '#ebdbb2' }}>
+                Edit this text in <code className="px-2 py-1 rounded" style={{ backgroundColor: '#3c3836', color: '#8ec07c' }}>app/page.tsx</code> to make it yours.
+            </p>
+            <button
+                className="px-6 py-3 rounded-lg shadow transition hover:shadow-lg"
+                style={{
+                    backgroundColor: '#cc241d',
+                    color: '#fbf1c7'
+                }}
+                onMouseEnter={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#fb4934'}
+                onMouseLeave={(e) => (e.target as HTMLButtonElement).style.backgroundColor = '#cc241d'}
+            >
+                Click Me!
+            </button>
+            </main>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    );
 }
