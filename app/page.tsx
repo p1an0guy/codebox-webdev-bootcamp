@@ -6,6 +6,8 @@ export default function Home() {
     const [displayedText, setDisplayedText] = useState('');
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showCursor, setShowCursor] = useState(true);
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const [isHoveringClickable, setIsHoveringClickable] = useState(false);
 
     const fullText = "Welcome to p1an0_guy's Next.js Page!";
 
@@ -52,7 +54,7 @@ export default function Home() {
         console.log('Canvas created and added to DOM', canvas.width, canvas.height);
 
         const characters = "!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~'";
-        const columns = 60;
+        const columns = Math.floor(window.innerWidth / 12); // More columns with tighter spacing
         const drops: number[] = [];
 
         for (let i = 0; i < columns; i++) {
@@ -65,28 +67,29 @@ export default function Home() {
                 console.log('Canvas context not available');
                 return;
             }
-            
-            const fontSize = 16;
+
+            const fontSize = 12; // Fixed small font size
+            const columnWidth = 12; // Tighter column spacing for more density
 
             // Fills the canvas with transparent background at low opacity, creating fade effect
             ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; // Very transparent black for fade effect
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             ctx.fillStyle = '#8ec07c'; // Gruvbox green
-            ctx.font = 0.001 * fontSize * canvas.width + 'px monospace';
+            ctx.font = fontSize + 'px monospace'; // Fixed font size
 
             for (let i = 0; i < drops.length; i++) {
                 const character = characters[Math.floor(Math.random() * characters.length)];
 
                 ctx.fillText(
                     character,
-                    i * (0.001 * fontSize + 0.001) * canvas.width,
-                    drops[i] * (0.001 * fontSize) * canvas.width
+                    i * columnWidth, // Fixed column spacing
+                    drops[i] * fontSize // Fixed row spacing
                 );
 
                 if (
-                    drops[i] * (0.001 * fontSize) * canvas.width > canvas.height &&
-                    Math.random() > 0.975
+                    drops[i] * fontSize > canvas.height &&
+                    Math.random() > 0.95
                 ) {
                     drops[i] = 0;
                 }
@@ -114,33 +117,105 @@ export default function Home() {
         };
     }, []);
 
+    // Custom retro mouse cursor tracking
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const handleMouseMove = (e: MouseEvent) => {
+            setMousePos({ x: e.clientX, y: e.clientY });
+        };
+
+        // Hide default cursor on the entire document
+        document.body.style.cursor = 'none';
+
+        window.addEventListener('mousemove', handleMouseMove);
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            document.body.style.cursor = 'auto';
+        };
+    }, []);
+
     return (
         <div style={{ backgroundColor: '#282828', minHeight: '100vh' }}>
-            <main className="flex min-h-screen flex-col items-center justify-center" style={{ fontFamily: '"JetBrainsMono Nerd Font", "JetBrains Mono", "Fira Code", "Cascadia Code", "SF Mono", Monaco, "Inconsolata", "Roboto Mono", "Source Code Pro", "Ubuntu Mono", monospace', position: 'relative', zIndex: 10, backgroundColor: 'transparent' }}>
-            <h1 className="text-4xl font-bold mb-6" style={{ color: '#fabd2f' }}>
-                {displayedText}
-                <span style={{
-                    opacity: showCursor ? 1 : 0,
-                    color: '#fabd2f'
-                }}>_</span>
-            </h1>
-            <p className="text-lg mb-6" style={{ color: '#ebdbb2' }}>
-                Edit this text in <code className="px-2 py-1 rounded" style={{ backgroundColor: '#3c3836', color: '#8ec07c' }}>app/page.tsx</code> to make it yours.
-            </p>
-            <a
-                href="https://github.com/p1an0guy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-6 py-3 rounded-lg shadow transition hover:shadow-lg inline-block text-center no-underline"
+            {/* Custom Retro Cursor with Image Switching */}
+            <img
+                src={isHoveringClickable ? '/img/clicker.png' : '/img/pointer.png'}
+                alt="cursor"
                 style={{
-                    backgroundColor: '#cc241d',
-                    color: '#fbf1c7'
+                    position: 'fixed',
+                    left: mousePos.x,
+                    top: mousePos.y,
+                    width: '24px',
+                    height: '32px',
+                    pointerEvents: 'none',
+                    zIndex: 9999,
+                    filter: 'drop-shadow(0 0 6px rgba(250, 189, 47, 0.3)) drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8))',
+                    imageRendering: 'pixelated'
                 }}
-                onMouseEnter={(e) => (e.target as HTMLAnchorElement).style.backgroundColor = '#fb4934'}
-                onMouseLeave={(e) => (e.target as HTMLAnchorElement).style.backgroundColor = '#cc241d'}
-            >
-                Visit My GitHub!
-            </a>
+            />
+
+            <main className="flex min-h-screen flex-col items-center justify-center" style={{ fontFamily: '"JetBrainsMono Nerd Font", "JetBrains Mono", "Fira Code", "Cascadia Code", "SF Mono", Monaco, "Inconsolata", "Roboto Mono", "Source Code Pro", "Ubuntu Mono", monospace', position: 'relative', zIndex: 10, backgroundColor: 'transparent' }}>
+                <h1 style={{
+                    color: '#fabd2f',
+                    fontSize: '48px',
+                    fontWeight: 'bold',
+                    marginBottom: '24px',
+                    textShadow: '0 0 10px rgba(250, 189, 47, 0.8), 0 0 20px rgba(250, 189, 47, 0.6), 0 0 30px rgba(250, 189, 47, 0.4), 2px 2px 4px rgba(0, 0, 0, 0.8)'
+                }}>
+                    {displayedText}
+                    <span style={{
+                        opacity: showCursor ? 1 : 0,
+                        color: '#fabd2f',
+                        textShadow: '0 0 10px rgba(250, 189, 47, 0.8), 0 0 20px rgba(250, 189, 47, 0.6), 0 0 30px rgba(250, 189, 47, 0.4), 2px 2px 4px rgba(0, 0, 0, 0.8)'
+                    }}>_</span>
+                </h1>
+                <p style={{
+                    color: '#ebdbb2',
+                    fontSize: '20px',
+                    marginBottom: '24px',
+                    textShadow: '0 0 8px rgba(235, 219, 178, 0.6), 2px 2px 4px rgba(0, 0, 0, 0.8)'
+                }}>
+                    Edit this text in <code style={{
+                        backgroundColor: '#3c3836',
+                        color: '#8ec07c',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        fontSize: '18px',
+                        textShadow: '0 0 6px rgba(142, 192, 124, 0.5), 1px 1px 2px rgba(0, 0, 0, 0.8)'
+                    }}>app/page.tsx</code> to make it yours.
+                </p>
+                <a
+                    href="https://github.com/p1an0guy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                        backgroundColor: '#cc241d',
+                        color: '#fbf1c7',
+                        padding: '12px 24px',
+                        borderRadius: '8px',
+                        fontSize: '18px',
+                        fontWeight: 'bold',
+                        textDecoration: 'none',
+                        display: 'inline-block',
+                        textAlign: 'center',
+                        transition: 'all 0.3s ease',
+                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(204, 36, 29, 0.4)',
+                        textShadow: '0 0 8px rgba(251, 241, 199, 0.6), 2px 2px 4px rgba(0, 0, 0, 0.8)'
+                    }}
+                    onMouseEnter={(e) => {
+                        (e.target as HTMLAnchorElement).style.backgroundColor = '#fb4934';
+                        (e.target as HTMLAnchorElement).style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.4), 0 0 20px rgba(251, 73, 52, 0.5)';
+                        setIsHoveringClickable(true);
+                    }}
+                    onMouseLeave={(e) => {
+                        (e.target as HTMLAnchorElement).style.backgroundColor = '#cc241d';
+                        (e.target as HTMLAnchorElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(204, 36, 29, 0.4)';
+                        setIsHoveringClickable(false);
+                    }}
+                >
+                    Visit My GitHub!
+                </a>
             </main>
         </div>
     );
