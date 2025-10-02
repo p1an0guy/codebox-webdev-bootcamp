@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import styles from './page.module.css';
 
 export default function Home() {
@@ -9,9 +10,9 @@ export default function Home() {
     const [showCursor, setShowCursor] = useState(true);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [isHoveringClickable, setIsHoveringClickable] = useState(false);
-    const [repulsionActive, setRepulsionActive] = useState(true);
+    const repulsionActive = true;
 
-    const fullText = "Welcome to p1an0_guy's Next.js Page!";
+    const fullText = "Welcome to p1an0_guy&apos;s Next.js Page!";
 
     // Typewriter effect with randomized speed
     useEffect(() => {
@@ -166,7 +167,7 @@ export default function Home() {
                 canvas.parentNode.removeChild(canvas);
             }
         };
-    }, []);
+    }, [repulsionActive]);
 
     // Custom retro mouse cursor tracking
     useEffect(() => {
@@ -190,9 +191,11 @@ export default function Home() {
     return (
         <div style={{ backgroundColor: '#282828', minHeight: '100vh' }}>
             {/* Custom Retro Cursor with Image Switching */}
-            <img
+            <Image
                 src={isHoveringClickable ? '/img/clicker.png' : '/img/pointer.png'}
                 alt="cursor"
+                width={24}
+                height={32}
                 className={styles['custom-cursor']}
                 style={{
                     left: mousePos.x,
@@ -210,13 +213,13 @@ export default function Home() {
                         About Me
                     </h2>
                     <p className={styles['about-paragraph']}>
-                        Welcome! I'm p1an0_guy (aka Jonah), a first year Computer Engineer at Cal Poly.
+                        Welcome! I&apos;m p1an0_guy (aka Jonah), a first year Computer Engineer at Cal Poly.
                     </p>
                     <p className={styles['about-paragraph']}>
                         I specialize in <code className={styles['code-highlight']}>Python</code> and <code className={styles['code-highlight']}>C++</code>, and I have experience developing Full Stack Generative AI applications on AWS Cloud technology.
                     </p>
                     <p className={styles['about-paragraph']}>
-                        When I'm not coding, you'll find me practicing my instruments, poking around with Unix operating systems, or cooking in the dorm kitchens.
+                        When I&apos;m not coding, you&apos;ll find me practicing my instruments, poking around with Unix operating systems, or cooking in the dorm kitchens.
                     </p>
                     <p className={styles['about-paragraph-last']}>
                         I look forward to joining CodeBox this year and being part of a project that will make a difference in the real world!
