@@ -10,6 +10,7 @@ export default function Home() {
     const [showCursor, setShowCursor] = useState(true);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [isHoveringClickable, setIsHoveringClickable] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
     const repulsionActive = true;
 
     const fullText = "Welcome to p1an0_guy&apos;s Next.js Page!";
@@ -36,6 +37,23 @@ export default function Home() {
         }, 500); // Blink speed
 
         return () => clearInterval(interval);
+    }, []);
+
+    // Mobile detection
+    useEffect(() => {
+        const checkIfMobile = () => {
+            const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+            const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase()) ||
+                ('ontouchstart' in window) ||
+                (navigator.maxTouchPoints > 0);
+            setIsMobile(isMobileDevice);
+        };
+
+        checkIfMobile();
+
+        // Also check on resize in case device orientation changes
+        window.addEventListener('resize', checkIfMobile);
+        return () => window.removeEventListener('resize', checkIfMobile);
     }, []);
 
     // Matrix-style ASCII rain using Canvas
@@ -169,15 +187,15 @@ export default function Home() {
         };
     }, [repulsionActive]);
 
-    // Custom retro mouse cursor tracking
+    // Custom retro mouse cursor tracking (desktop only)
     useEffect(() => {
-        if (typeof window === 'undefined') return;
+        if (typeof window === 'undefined' || isMobile) return;
 
         const handleMouseMove = (e: MouseEvent) => {
             setMousePos({ x: e.clientX, y: e.clientY });
         };
 
-        // Hide default cursor on the entire document
+        // Hide default cursor on the entire document (desktop only)
         document.body.style.cursor = 'none';
 
         window.addEventListener('mousemove', handleMouseMove);
@@ -186,22 +204,24 @@ export default function Home() {
             window.removeEventListener('mousemove', handleMouseMove);
             document.body.style.cursor = 'auto';
         };
-    }, []);
+    }, [isMobile]);
 
     return (
         <div style={{ backgroundColor: '#282828', minHeight: '100vh' }}>
-            {/* Custom Retro Cursor with Image Switching */}
-            <Image
-                src={isHoveringClickable ? '/img/clicker.png' : '/img/pointer.png'}
-                alt="cursor"
-                width={24}
-                height={32}
-                className={styles['custom-cursor']}
-                style={{
-                    left: mousePos.x,
-                    top: mousePos.y,
-                }}
-            />
+            {/* Custom Retro Cursor with Image Switching (Desktop Only) */}
+            {!isMobile && (
+                <Image
+                    src={isHoveringClickable ? '/img/clicker.png' : '/img/pointer.png'}
+                    alt="cursor"
+                    width={24}
+                    height={32}
+                    className={styles['custom-cursor']}
+                    style={{
+                        left: mousePos.x,
+                        top: mousePos.y,
+                    }}
+                />
+            )}
 
             <main className={`flex min-h-screen flex-col items-center justify-center ${styles['main-container']}`}>
                 <h1 className={styles['main-title']}>
