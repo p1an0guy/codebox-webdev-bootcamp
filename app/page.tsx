@@ -42,7 +42,7 @@ export default function Home() {
     // Mobile detection
     useEffect(() => {
         const checkIfMobile = () => {
-            const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+            const userAgent = navigator.userAgent || navigator.vendor || '';
             const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase()) ||
                 ('ontouchstart' in window) ||
                 (navigator.maxTouchPoints > 0);
