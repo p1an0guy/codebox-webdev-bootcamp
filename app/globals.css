@@ -25,9 +25,11 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Hide default cursor globally for custom cursor */
-* {
-    cursor: none !important;
+/* Hide default cursor globally for custom cursor (desktop only) */
+@media (hover: hover) and (pointer: fine) {
+    * {
+        cursor: none !important;
+    }
 }
 
 html,
