@@ -1,0 +1,122 @@
+/* Matrix Rain Page Styles */
+
+/* Matrix Canvas */
+.matrix-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Custom Cursor */
+.custom-cursor {
+    position: fixed;
+    width: 24px;
+    height: 32px;
+    pointer-events: none;
+    z-index: 9999;
+    filter: drop-shadow(0 0 6px rgba(250, 189, 47, 0.3)) drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
+    image-rendering: pixelated;
+}
+
+/* Main Container */
+.main-container {
+    font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", "Fira Code", "Cascadia Code", "SF Mono", Monaco, "Inconsolata", "Roboto Mono", "Source Code Pro", "Ubuntu Mono", monospace;
+    position: relative;
+    z-index: 10;
+    background-color: transparent;
+    padding: 60px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Main Title */
+.main-title {
+    color: #fabd2f;
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 24px;
+    text-shadow: 0 0 10px rgba(250, 189, 47, 0.8), 0 0 20px rgba(250, 189, 47, 0.6), 0 0 30px rgba(250, 189, 47, 0.4), 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Blinking Cursor */
+.blinking-cursor {
+    color: #fabd2f;
+    text-shadow: 0 0 10px rgba(250, 189, 47, 0.8), 0 0 20px rgba(250, 189, 47, 0.6), 0 0 30px rgba(250, 189, 47, 0.4), 2px 2px 4px rgba(0, 0, 0, 0.8);
+    transition: opacity 0.1s ease;
+}
+
+.blinking-cursor.visible {
+    opacity: 1;
+}
+
+.blinking-cursor.hidden {
+    opacity: 0;
+}
+
+/* About Me Section */
+.about-section {
+    color: #ebdbb2;
+    font-size: 20px;
+    margin-bottom: 32px;
+    text-shadow: 0 0 8px rgba(235, 219, 178, 0.6), 2px 2px 4px rgba(0, 0, 0, 0.8);
+    line-height: 1.6;
+    background-color: rgba(0, 0, 0, 0.4);
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(235, 219, 178, 0.1);
+}
+
+/* About Me Heading */
+.about-heading {
+    color: #8ec07c;
+    font-size: 24px;
+    margin-bottom: 16px;
+    text-shadow: 0 0 10px rgba(142, 192, 124, 0.7), 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Paragraph Styles */
+.about-paragraph {
+    margin-bottom: 16px;
+}
+
+.about-paragraph-last {
+    margin-bottom: 0px;
+    margin-top: 24px;
+}
+
+/* Code Tags */
+.code-highlight {
+    background-color: #3c3836;
+    color: #8ec07c;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 16px;
+    text-shadow: 0 0 6px rgba(142, 192, 124, 0.5);
+}
+
+/* GitHub Button */
+.github-button {
+    background-color: #cc241d;
+    color: #fbf1c7;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(204, 36, 29, 0.4);
+    text-shadow: 0 0 8px rgba(251, 241, 199, 0.6), 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.github-button:hover {
+    background-color: #fb4934;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4), 0 0 20px rgba(251, 73, 52, 0.5);
+}

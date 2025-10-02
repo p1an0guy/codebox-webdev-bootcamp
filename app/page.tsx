@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import styles from './page.module.css';
 
 export default function Home() {
     const [displayedText, setDisplayedText] = useState('');
@@ -8,6 +9,7 @@ export default function Home() {
     const [showCursor, setShowCursor] = useState(true);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [isHoveringClickable, setIsHoveringClickable] = useState(false);
+    const [repulsionActive, setRepulsionActive] = useState(true);
 
     const fullText = "Welcome to p1an0_guy's Next.js Page!";
 
@@ -41,24 +43,17 @@ export default function Home() {
 
         const canvas = document.createElement('canvas');
         canvas.id = 'matrix';
-        canvas.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-        `;
+        canvas.className = styles['matrix-canvas'];
         document.body.appendChild(canvas);
         console.log('Canvas created and added to DOM', canvas.width, canvas.height);
 
         const characters = "!#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~'";
         const columns = Math.floor(window.innerWidth / 12); // More columns with tighter spacing
         const drops: number[] = [];
+        let currentMousePos = { x: 0, y: 0 }; // Local mouse position for draw function
 
         for (let i = 0; i < columns; i++) {
-            drops[i] = 1;
+            drops[i] = Math.floor(Math.random() * canvas.height / 12);
         }
 
         function draw() {
@@ -80,12 +75,61 @@ export default function Home() {
 
             for (let i = 0; i < drops.length; i++) {
                 const character = characters[Math.floor(Math.random() * characters.length)];
+                const charX = i * columnWidth;
+                const charY = drops[i] * fontSize;
 
-                ctx.fillText(
-                    character,
-                    i * columnWidth, // Fixed column spacing
-                    drops[i] * fontSize // Fixed row spacing
+                // Create cascading umbrella effect (only if repulsion is active)
+                const horizontalDistance = charX - currentMousePos.x; // Keep sign for left/right
+                const verticalDistance = charY - currentMousePos.y;
+                const isUnderCursor = verticalDistance > 0; // Character is below cursor
+                const umbrellaWidth = 120; // Width of umbrella effect
+                const umbrellaHeight = 200; // How far down the umbrella effect extends
+
+                // Create curved cascading effect - rain flows in parabolic arcs
+                let cascadeOffset = 0;
+                if (repulsionActive && isUnderCursor && Math.abs(horizontalDistance) < umbrellaWidth) {
+                    // Calculate cascade with curved trajectory (parabolic)
+                    const fallDistance = Math.min(verticalDistance, umbrellaHeight);
+                    const normalizedFall = fallDistance / umbrellaHeight; // 0 to 1
+
+                    // Create parabolic curve: starts slow, accelerates, then levels off
+                    const curveStrength = Math.sin(normalizedFall * Math.PI * 0.8); // Sine curve for natural arc
+                    const maxDeflection = 80; // Increased max deflection for more dramatic curve
+
+                    // Add some randomness for natural water variation
+                    const randomVariation = (Math.sin(charY * 0.1 + charX * 0.05) * 0.3 + 1); // 0.7 to 1.3 multiplier
+
+                    cascadeOffset = curveStrength * maxDeflection * randomVariation;
+
+                    // Determine cascade direction based on which side of cursor
+                    if (horizontalDistance >= 0) {
+                        cascadeOffset = cascadeOffset; // Right side - push right
+                    } else {
+                        cascadeOffset = -cascadeOffset; // Left side - push left
+                    }
+                }
+
+                // Adjusted position after cascade
+                const effectiveX = charX + cascadeOffset;
+                const adjustedHorizontalDistance = effectiveX - currentMousePos.x;
+
+                // Check if character is in the umbrella shadow zone (after cascade)
+                const inUmbrellaZone =
+                    isUnderCursor &&
+                    Math.abs(adjustedHorizontalDistance) < umbrellaWidth * 0.7 && // Smaller core shadow
+                    verticalDistance < umbrellaHeight;
+
+                // Small exclusion zone directly around cursor
+                const directDistance = Math.sqrt(
+                    Math.pow(charX - currentMousePos.x, 2) + Math.pow(charY - currentMousePos.y, 2)
                 );
+                const tooCloseToCursor = directDistance < 50;
+
+                // Only draw character if it's not in umbrella zone and not too close to cursor
+                if (!inUmbrellaZone && !tooCloseToCursor) {
+                    // Draw with cascade offset for dramatic effect
+                    ctx.fillText(character, effectiveX, charY);
+                }
 
                 if (
                     drops[i] * fontSize > canvas.height &&
@@ -103,7 +147,13 @@ export default function Home() {
             canvas.height = window.innerHeight;
         }
 
+        // Update local mouse position for cursor avoidance
+        const handleMatrixMouseMove = (e: MouseEvent) => {
+            currentMousePos = { x: e.clientX, y: e.clientY };
+        };
+
         window.addEventListener('resize', resizeCanvas, false);
+        window.addEventListener('mousemove', handleMatrixMouseMove, false);
         resizeCanvas();
 
         const interval = setInterval(draw, 50);
@@ -111,6 +161,7 @@ export default function Home() {
         return () => {
             clearInterval(interval);
             window.removeEventListener('resize', resizeCanvas);
+            window.removeEventListener('mousemove', handleMatrixMouseMove);
             if (canvas && canvas.parentNode) {
                 canvas.parentNode.removeChild(canvas);
             }
@@ -142,77 +193,42 @@ export default function Home() {
             <img
                 src={isHoveringClickable ? '/img/clicker.png' : '/img/pointer.png'}
                 alt="cursor"
+                className={styles['custom-cursor']}
                 style={{
-                    position: 'fixed',
                     left: mousePos.x,
                     top: mousePos.y,
-                    width: '24px',
-                    height: '32px',
-                    pointerEvents: 'none',
-                    zIndex: 9999,
-                    filter: 'drop-shadow(0 0 6px rgba(250, 189, 47, 0.3)) drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8))',
-                    imageRendering: 'pixelated'
                 }}
             />
 
-            <main className="flex min-h-screen flex-col items-center justify-center" style={{ fontFamily: '"JetBrainsMono Nerd Font", "JetBrains Mono", "Fira Code", "Cascadia Code", "SF Mono", Monaco, "Inconsolata", "Roboto Mono", "Source Code Pro", "Ubuntu Mono", monospace', position: 'relative', zIndex: 10, backgroundColor: 'transparent' }}>
-                <h1 style={{
-                    color: '#fabd2f',
-                    fontSize: '48px',
-                    fontWeight: 'bold',
-                    marginBottom: '24px',
-                    textShadow: '0 0 10px rgba(250, 189, 47, 0.8), 0 0 20px rgba(250, 189, 47, 0.6), 0 0 30px rgba(250, 189, 47, 0.4), 2px 2px 4px rgba(0, 0, 0, 0.8)'
-                }}>
+            <main className={`flex min-h-screen flex-col items-center justify-center ${styles['main-container']}`}>
+                <h1 className={styles['main-title']}>
                     {displayedText}
-                    <span style={{
-                        opacity: showCursor ? 1 : 0,
-                        color: '#fabd2f',
-                        textShadow: '0 0 10px rgba(250, 189, 47, 0.8), 0 0 20px rgba(250, 189, 47, 0.6), 0 0 30px rgba(250, 189, 47, 0.4), 2px 2px 4px rgba(0, 0, 0, 0.8)'
-                    }}>_</span>
+                    <span className={`${styles['blinking-cursor']} ${showCursor ? styles.visible : styles.hidden}`}>_</span>
                 </h1>
-                <p style={{
-                    color: '#ebdbb2',
-                    fontSize: '20px',
-                    marginBottom: '24px',
-                    textShadow: '0 0 8px rgba(235, 219, 178, 0.6), 2px 2px 4px rgba(0, 0, 0, 0.8)'
-                }}>
-                    Edit this text in <code style={{
-                        backgroundColor: '#3c3836',
-                        color: '#8ec07c',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        fontSize: '18px',
-                        textShadow: '0 0 6px rgba(142, 192, 124, 0.5), 1px 1px 2px rgba(0, 0, 0, 0.8)'
-                    }}>app/page.tsx</code> to make it yours.
-                </p>
+                <div className={styles['about-section']}>
+                    <h2 className={styles['about-heading']}>
+                        About Me
+                    </h2>
+                    <p className={styles['about-paragraph']}>
+                        Welcome! I'm p1an0_guy (aka Jonah), a first year Computer Engineer at Cal Poly.
+                    </p>
+                    <p className={styles['about-paragraph']}>
+                        I specialize in <code className={styles['code-highlight']}>Python</code> and <code className={styles['code-highlight']}>C++</code>, and I have experience developing Full Stack Generative AI applications on AWS Cloud technology.
+                    </p>
+                    <p className={styles['about-paragraph']}>
+                        When I'm not coding, you'll find me practicing my instruments, poking around with Unix operating systems, or cooking in the dorm kitchens.
+                    </p>
+                    <p className={styles['about-paragraph-last']}>
+                        I look forward to joining CodeBox this year and being part of a project that will make a difference in the real world!
+                    </p>
+                </div>
                 <a
                     href="https://github.com/p1an0guy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{
-                        backgroundColor: '#cc241d',
-                        color: '#fbf1c7',
-                        padding: '12px 24px',
-                        borderRadius: '8px',
-                        fontSize: '18px',
-                        fontWeight: 'bold',
-                        textDecoration: 'none',
-                        display: 'inline-block',
-                        textAlign: 'center',
-                        transition: 'all 0.3s ease',
-                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(204, 36, 29, 0.4)',
-                        textShadow: '0 0 8px rgba(251, 241, 199, 0.6), 2px 2px 4px rgba(0, 0, 0, 0.8)'
-                    }}
-                    onMouseEnter={(e) => {
-                        (e.target as HTMLAnchorElement).style.backgroundColor = '#fb4934';
-                        (e.target as HTMLAnchorElement).style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.4), 0 0 20px rgba(251, 73, 52, 0.5)';
-                        setIsHoveringClickable(true);
-                    }}
-                    onMouseLeave={(e) => {
-                        (e.target as HTMLAnchorElement).style.backgroundColor = '#cc241d';
-                        (e.target as HTMLAnchorElement).style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(204, 36, 29, 0.4)';
-                        setIsHoveringClickable(false);
-                    }}
+                    className={styles['github-button']}
+                    onMouseEnter={() => setIsHoveringClickable(true)}
+                    onMouseLeave={() => setIsHoveringClickable(false)}
                 >
                     Visit My GitHub!
                 </a>
