@@ -13,7 +13,7 @@ export default function Home() {
     const [isMobile, setIsMobile] = useState(false);
     const repulsionActive = true;
 
-    const fullText = "Welcome to p1an0_guy&apos;s Next.js Page!";
+    const fullText = "Welcome to p1an0_guy's Next.js Page!";
 
     // Typewriter effect with randomized speed
     useEffect(() => {
